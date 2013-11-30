@@ -20,4 +20,8 @@ public class MainActivity extends Activity {
         return true;
     }
     
+    //Use for testing
+    public int add(int i, int j) {
+    	return (i + j);
+    }  
 }
