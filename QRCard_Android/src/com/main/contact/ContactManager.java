@@ -3,8 +3,12 @@ package com.main.contact;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.SipAddress;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
@@ -23,17 +27,23 @@ public class ContactManager {
 		//首先插入空值，再得到rawContactsId ，用于下面插值 
 		ContentValues values = new ContentValues (); 
 		Uri rawContactUri = context.getContentResolver().insert(RawContacts.CONTENT_URI,values); 
-		long rawContactsId = ContentUris.parseId(rawContactUri); 
-		insertName(context,values,rawContactsId, contact.getName());
+		long rawContactId = ContentUris.parseId(rawContactUri); 
+		insertName(context,values,rawContactId, contact.getName());
 		for(ContactPhone phone: contact.getPhoneList()){
-			insertPhone(context,values,rawContactsId, phone);
+			insertPhone(context,values,rawContactId, phone);
+		}
+		for(ContactEmail email: contact.getEmailList()){
+			insertEmail(context,values,rawContactId, email);
+		}
+		for(ContactAddress address: contact.getAddressList()){
+			insertAddress(context,values,rawContactId, address);
 		}
 	}
 	
-	private void insertName(Context context, ContentValues values, long rawContactsId, ContactName name){
+	private void insertName(Context context, ContentValues values, long rawContactId, ContactName name){
 		//往空记录中插入姓名 
 		values.clear(); 
-		values.put(Data.RAW_CONTACT_ID,rawContactsId); 
+		values.put(Data.RAW_CONTACT_ID,rawContactId); 
 		//设置内容类型 
 		values.put(Data.MIMETYPE,StructuredName.CONTENT_ITEM_TYPE); 
 		//设置联系人姓名
@@ -42,10 +52,10 @@ public class ContactManager {
 		context.getContentResolver().insert(Data.CONTENT_URI,values); 
 	}
 	
-	private void insertPhone(Context context, ContentValues values, long rawContactsId, ContactPhone phone){
+	private void insertPhone(Context context, ContentValues values, long rawContactId, ContactPhone phone){
 		//插入电话 
 		values.clear(); 
-		values.put(Data.RAW_CONTACT_ID,rawContactsId); 
+		values.put(Data.RAW_CONTACT_ID,rawContactId); 
 		values.put(Data.MIMETYPE,Phone.CONTENT_ITEM_TYPE); 
 		//设置联系人电话号码 
 		values.put(Phone.NUMBER, phone.getValue()); 
@@ -53,4 +63,48 @@ public class ContactManager {
 		values.put(Phone.TYPE, phone.getType());
 		context.getContentResolver().insert(Data.CONTENT_URI,values);
 	}
+	
+	private void insertEmail(Context context, ContentValues values, long rawContactId, ContactEmail email){
+		values.clear();     
+	    values.put(Data.RAW_CONTACT_ID, rawContactId);       
+	    values.put(Data.MIMETYPE, Email.CONTENT_ITEM_TYPE);     
+	    values.put(Email.DATA, email.getValue());     
+	    values.put(Email.TYPE, email.getType());     
+	    context.getContentResolver().insert(Data.CONTENT_URI, values);
+	}
+	
+	private void insertAddress(Context context, ContentValues values, long rawContactId, ContactAddress address){
+//		values.clear();     
+//	    values.put(Data.RAW_CONTACT_ID, rawContactId);       
+//	    values.put(Data.MIMETYPE, Email.CONTENT_ITEM_TYPE);     
+//	    values.put(SipAddress.DATA, address.getValue());     
+//	    values.put(SipAddress.TYPE, address.getType());     
+//	    context.getContentResolver().insert(Data.CONTENT_URI, values);
+	}
+	
+	public String getContactIdByPhone(Context context,String phone) {  
+		String contactId = "";
+        String[] projection = { ContactsContract.RawContacts.CONTACT_ID ,  
+                                ContactsContract.CommonDataKinds.Phone.NUMBER};  
+
+        Cursor cursor = context.getContentResolver().query(  
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,  
+                projection,    // Which columns to return.  
+                ContactsContract.CommonDataKinds.Phone.NUMBER + " = '" + phone + "'", // WHERE clause.  
+                null,          // WHERE clause value substitution  
+                null);   // Sort order.  
+  
+        if( cursor != null ) {  
+        	for( int i = 0; i < cursor.getCount(); i++ )  
+        	{  
+        		cursor.moveToPosition(i);  
+              
+        		// 取得联系人名字  
+        		int contactIdFieldColumnIndex = cursor.getColumnIndex(ContactsContract.RawContacts.CONTACT_ID);     
+        		contactId = cursor.getString(contactIdFieldColumnIndex);  
+        	}  
+        }
+        
+        return contactId;
+    } 
 }

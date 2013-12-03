@@ -58,4 +58,9 @@ public class ContactTest extends InstrumentationTestCase {
 		contact.setPhoneList(phoneList);
 		ContactManager.getInstance().addContact( mainActivity, contact);
 	}
+	
+	public void testGetContactIdByPhone() throws Exception { 
+		String phone = "123";
+		String contactId = ContactManager.getInstance().getContactIdByPhone( mainActivity, phone);
+	}
 }
