@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import com.main.contact.ContactInfo;
 import com.main.contact.ContactManager;
+import com.main.contact.ContactName;
+import com.main.contact.ContactPhone;
 import com.main.qrcard.MainActivity;
 
 import android.content.ContentUris;
@@ -11,6 +13,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
@@ -39,7 +42,20 @@ public class ContactTest extends InstrumentationTestCase {
 
 	public void testAddContact() throws Exception { 
 		ContactInfo contact = new ContactInfo();
-		contact.setName("Demo");
-		ContactManager.getInstance().addContact(contact, mainActivity);
+		ContactName name = new ContactName();
+		name.setType(StructuredName.GIVEN_NAME);
+		name.setValue("Demo");
+		contact.setName(name);
+		ArrayList<ContactPhone> phoneList = new ArrayList<ContactPhone>();
+		ContactPhone phone = new ContactPhone();
+		phone.setType(Phone.TYPE_MOBILE);
+		phone.setValue("123");
+		phoneList.add(phone);
+		phone = new ContactPhone();
+		phone.setType(Phone.TYPE_MOBILE);
+		phone.setValue("456");
+		phoneList.add(phone);
+		contact.setPhoneList(phoneList);
+		ContactManager.getInstance().addContact( mainActivity, contact);
 	}
 }
