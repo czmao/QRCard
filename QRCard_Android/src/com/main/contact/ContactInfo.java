@@ -6,7 +6,7 @@ public class ContactInfo {
 	private ContactName name;
 	private ArrayList<ContactPhone> phoneList;
 	private ArrayList<ContactEmail> emailList;
-	private ArrayList<ContactAddress> addresslList;
+	private ArrayList<ContactAddress> addressList;
 	
 	public ContactName getName(){
 		return name;
@@ -39,13 +39,13 @@ public class ContactInfo {
 	}
 	
 	public ArrayList<ContactAddress> getAddressList(){
-		if(addresslList==null){
+		if(addressList==null){
 			return new ArrayList<ContactAddress>();
 		}
-		return addresslList;
+		return addressList;
 	}
 	
-	public void setAddressList(ArrayList<ContactAddress> addresslList){
-		this.addresslList = addresslList;
+	public void setAddressList(ArrayList<ContactAddress> addressList){
+		this.addressList = addressList;
 	}
 }
