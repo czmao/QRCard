@@ -13,40 +13,47 @@ import java.util.Date;
 import android.os.Environment;
 
 public class Logger {
-	private static String filename = Environment.getExternalStorageDirectory() + "/QRCard/QRCard.log";
-
-	private FileOutputStream fout;
+	private static String DRI_NAME = Environment.getExternalStorageDirectory() + "/QRCard";
+	private static String FILE_FOR_TEST_NAME = DRI_NAME + "/QRCardTest.txt";
+	private static String FILE_NAME = DRI_NAME + "/QRCard.log";
+	private static int MAX_FILE_SIZE = 1024*100;
+	private static DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static Logger instance;
-	
+	private FileOutputStream fout;
 	private static FileWriter writer;
 
 
 	private Logger() {
-		File file = new File(filename);
-		if (file.exists()) {
+		boolean ret = false;
+		File destDir = new File(DRI_NAME);
+		if (!destDir.exists()) {
+			ret = destDir.mkdirs();
+		}
+		
+		File file = new File(FILE_NAME);	
+		if (file.exists()&&file.length()>MAX_FILE_SIZE) {
 			file.delete();
+		}	
+		if(!file.exists()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				return;
+			}
 		}
-		try {
-			file.createNewFile();
-		} catch (IOException e) {
-			return;
-		}
-		try {
-			fout = new FileOutputStream(file);
-		} catch (FileNotFoundException e) {
-			return;
-		}
-	}
 
-	private void writeToFile(String msg) {
-		try {
-			fout.write(msg.getBytes());
-			fout.write('\r');
-			fout.write('\n');
-			fout.write('\n');
-			fout.flush();
-		} catch (Exception e) {
+		file = new File(FILE_FOR_TEST_NAME);
+		long length = file.length();
+		if (file.exists()&&file.length()>0) {
+			file.delete();
+		}	
+		if(!file.exists()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				return;
+			}
 		}
 	}
 
@@ -71,41 +78,26 @@ public class Logger {
 		}
 	}
 
-	public static synchronized void write(String msg) {
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	public static synchronized void writeForTest(String msg) {
 		Date now = Calendar.getInstance().getTime();
-		getInstance().writeToFile(String.format("%s--%s", df.format(now),msg));
+		getInstance().writeToLog(FILE_FOR_TEST_NAME, String.format("%s--%s\r\n", df.format(now),msg));
 	}
 	
 	
-	public static synchronized void openWriter(String filepath, boolean overwrite){
-		String filenameLog=null;
-		if(filepath.startsWith("/"))
-			filenameLog = Environment.getExternalStorageDirectory()+filepath;
-		else
-			filenameLog = Environment.getExternalStorageDirectory()+"/"+filepath;
+	public static synchronized void write(String msg) {
+		Date now = Calendar.getInstance().getTime();
+		getInstance().writeToLog(FILE_NAME, String.format("%s--%s\r\n", df.format(now),msg));
+	}
 	
+	private void writeToLog(String fileName, String msg) {		
 		try {
-			if(writer!=null){
-				writer.close();
-			}
-			writer = new FileWriter(filenameLog,!overwrite);
+			if(writer==null){
+				writer = new FileWriter(fileName,true);
+			}		
+			if(writer!=null)
+				writer.write(msg);
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public static synchronized void writeToLog(String msg) {
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		Date now = Calendar.getInstance().getTime();
-
-		try {
-			if(writer!=null)
-				writer.write(String.format("%s--%s\r\n", df.format(now),msg));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -115,7 +107,6 @@ public class Logger {
 			try {
 				writer.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			writer = null;
