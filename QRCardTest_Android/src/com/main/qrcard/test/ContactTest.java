@@ -19,6 +19,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
+import android.provider.ContactsContract.RawContacts;
 import android.test.InstrumentationTestCase;
 
 public class ContactTest extends InstrumentationTestCase {
@@ -37,17 +38,29 @@ public class ContactTest extends InstrumentationTestCase {
 		intent.setClassName("com.main.qrcard", MainActivity.class.getName());
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		mainActivity = (MainActivity) getInstrumentation().startActivitySync(intent);
+		deleteContact();
 	}
 
 	protected void tearDown() throws Exception {
-		deleteContact();
+		//deleteContact();
 		super.tearDown();
 	}
 
 	public void testAddContact() throws Exception { 
 		addContact();
+		addContact();
 		String contactId = ContactManager.getInstance().getContactIdByPhone( mainActivity, testPhone);
 		Assert.assertTrue(contactId.length()>0);
+	}
+	
+	public void testUpdateContact() throws Exception { 
+		addContact();
+		updateContact();
+		int rawContactId = ContactManager.getInstance().getRawContactIdByPhone( mainActivity, testPhone);
+		ArrayList<String> phoneList = ContactManager.getInstance().getPhoneListByRawContactId( mainActivity, rawContactId);
+		Assert.assertTrue(phoneList.size()== 2);
+		ArrayList<String> emailList = ContactManager.getInstance().getEmailListByRawContactId( mainActivity, rawContactId);
+		Assert.assertTrue(emailList.size()== 2);
 	}
 	
 	public void testGetContactIdByPhone() throws Exception { 
@@ -60,15 +73,35 @@ public class ContactTest extends InstrumentationTestCase {
 		Assert.assertTrue(contactId.length()==0);
 	}
 	
+	//RawContacts.CONTENT_URI = Uri.parse("content://com.android.contacts/raw_contacts"); 
+	//ContactsContract.Data = Uri.parse("content://com.android.contacts/data")
+	public void testColumns() throws Exception { 
+		//listColumnNames(ContactsContract.RawContacts.CONTENT_URI);
+		//listColumnNames(ContactsContract.Data.CONTENT_URI);
+	}
+	
 	private void deleteContact()
 	{
 		ContactManager.getInstance().deleteByPhone(mainActivity, testPhone);
 	}
 	
+	private void updateContact()
+	{
+		int rawContactId = ContactManager.getInstance().getRawContactIdByPhone( mainActivity, testPhone);
+		ContactInfo contact = initialContact();
+		contact.getPhoneList().get(0).setValue("test");
+		contact.getEmailList().get(0).setValue("test");
+		ContactManager.getInstance().updateContact( mainActivity, rawContactId, contact);
+	}
+	
 	private void addContact()
 	{
+		ContactInfo contact = initialContact();
+		ContactManager.getInstance().addContact( mainActivity, contact);
+	}
+	
+	ContactInfo initialContact(){
 		ContactInfo contact = new ContactInfo();
-		
 		ContactName name = new ContactName();
 		name.setType(CommonDataKinds.StructuredName.GIVEN_NAME);
 		name.setValue(testName);
@@ -87,16 +120,14 @@ public class ContactTest extends InstrumentationTestCase {
 		email.setValue(testEmail);
 		emailList.add(email);
 		contact.setEmailList(emailList);
-		
-		ContactManager.getInstance().addContact( mainActivity, contact);
+		return contact;
 	}
 	
-	private void listColumnNames()
+	private void listColumnNames(Uri url)
 	{
-		Uri contactUri =ContactsContract.Contacts.CONTENT_URI;
 		ContentResolver resolver = mainActivity.getContentResolver();
-		Cursor cursor =resolver.query(contactUri, null,null, null,null);
-		Logger.writeForTest("listColumnNames///////////////");
+		Cursor cursor =resolver.query(url, null,null, null,null);
+		Logger.writeForTest(url.toString());
 		int columnNumber = cursor.getColumnCount();
 		for(int i = 0; i <columnNumber; i++) {
 			String temp =cursor.getColumnName(i);
