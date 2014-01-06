@@ -11,7 +11,7 @@ import com.main.contact.ContactManager;
 import com.main.contact.ContactName;
 import com.main.contact.ContactPhone;
 import com.main.log.Logger;
-import com.main.qrcard.MainActivity;
+import com.main.qrcard.QRCardActivity;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -24,7 +24,7 @@ import android.test.InstrumentationTestCase;
 
 public class ContactTest extends InstrumentationTestCase {
 	private static final String TAG = "ContactTest";
-	private MainActivity mainActivity = null;
+	private QRCardActivity mainActivity = null;
 	private String testName = "name";
 	private String testPhone = "phone";
 	private String testEmail = "email";
@@ -35,9 +35,9 @@ public class ContactTest extends InstrumentationTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		Intent intent = new Intent();
-		intent.setClassName("com.main.qrcard", MainActivity.class.getName());
+		intent.setClassName("com.main.qrcard", QRCardActivity.class.getName());
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		mainActivity = (MainActivity) getInstrumentation().startActivitySync(intent);
+		mainActivity = (QRCardActivity) getInstrumentation().startActivitySync(intent);
 		deleteContact();
 	}
 

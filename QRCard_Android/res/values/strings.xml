@@ -3,6 +3,10 @@
 
     <string name="app_name">QRCard</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
 
+    <!-- QRCode activity view -->
+  	<string name="open_camera">Open camera</string>
+  	<string name="scan_result">Scan result：</string>
+  	<string name="input_lable">Input the text</string>
+  	<string name="generate_qrcode">Generate QRcode</string>
 </resources>
