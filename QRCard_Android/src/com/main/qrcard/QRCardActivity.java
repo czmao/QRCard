@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.WriterException;
+import com.zxing.CaptureActivity;
 import com.zxing.ecnoding.EncodingHandler;
 
 public class QRCardActivity extends Activity {
@@ -34,15 +35,15 @@ public class QRCardActivity extends Activity {
         qrImgImageView = (ImageView) this.findViewById(R.id.iv_qr_image);
         
         Button scanBarCodeButton = (Button) this.findViewById(R.id.btn_scan_barcode);
-//        scanBarCodeButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-//				//打开扫描界面扫描条形码或二维码
-//				Intent openCameraIntent = new Intent(QRCardActivity.this,CaptureActivity.class);
-//				startActivityForResult(openCameraIntent, 0);
-//			}
-//		});
+        scanBarCodeButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				//打开扫描界面扫描条形码或二维码
+				Intent openCameraIntent = new Intent(QRCardActivity.this,CaptureActivity.class);
+				startActivityForResult(openCameraIntent, 0);
+			}
+		});
         
         Button generateQRCodeButton = (Button) this.findViewById(R.id.btn_add_qrcode);
         generateQRCodeButton.setOnClickListener(new OnClickListener() {
