@@ -7,28 +7,24 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.main.contact.ContactInfo;
 
-import android.content.Context;
-
 public class JsonHandler {
 	static final String TAG = "JsonHandler";
 	
-	private Context m_context;
 	private static JsonHandler ref;
 	private Gson gson;
 	
-	public static JsonHandler getInstance(Context context){
+	public static JsonHandler getInstance(){
 		if (ref == null){
 			synchronized (JsonHandler.class){
 				if (ref == null){
-					ref = new JsonHandler(context);
+					ref = new JsonHandler();
 				}
 			}
 		}
 		return ref;
 	}
 	
-	private JsonHandler(Context context){
-		m_context = context;
+	private JsonHandler(){
 		gson = new Gson();
 	}
 	
