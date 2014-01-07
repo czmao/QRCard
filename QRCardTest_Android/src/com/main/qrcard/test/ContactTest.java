@@ -100,7 +100,7 @@ public class ContactTest extends InstrumentationTestCase {
 		ContactManager.getInstance().addContact( mainActivity, contact);
 	}
 	
-	ContactInfo initialContact(){
+	private ContactInfo initialContact(){
 		ContactInfo contact = new ContactInfo();
 		ContactName name = new ContactName();
 		name.setType(CommonDataKinds.StructuredName.GIVEN_NAME);
