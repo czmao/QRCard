@@ -3,35 +3,40 @@ package com.main.qrcard;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.WriterException;
+import com.main.contact.ContactManager;
 import com.zxing.CaptureActivity;
 import com.zxing.ecnoding.EncodingHandler;
 
 public class QRCardActivity extends Activity {
 	public final static String TAG = "QRCardActivity";
 	public final static int QR_CODE_BITMAP_WIDTH_AND_HIGHT = 700;
+	private static final int SCAN_CONTACT = 0;
+	private static final int PICK_CONTACT = 3; 
 	
 	private TextView resultTextView;
-	private EditText qrStrEditText;
 	private ImageView qrImgImageView;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_qrcard);
         
         resultTextView = (TextView) this.findViewById(R.id.tv_scan_result);
-        qrStrEditText = (EditText) this.findViewById(R.id.et_qr_string);
+//        qrStrEditText = (EditText) this.findViewById(R.id.et_qr_string);
         qrImgImageView = (ImageView) this.findViewById(R.id.iv_qr_image);
         
         Button scanBarCodeButton = (Button) this.findViewById(R.id.btn_scan_barcode);
@@ -50,19 +55,14 @@ public class QRCardActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				try {
-					String contentString = qrStrEditText.getText().toString();
-					if (!contentString.equals("")) {
-						//Generate QR code bitmap with default width and height
-						Bitmap qrCodeBitmap = EncodingHandler.createQRCode(contentString, QR_CODE_BITMAP_WIDTH_AND_HIGHT);
-						qrImgImageView.setImageBitmap(qrCodeBitmap);
-					}else {
-						Toast.makeText(QRCardActivity.this, "Text can not be empty", Toast.LENGTH_SHORT).show();
-					}					
-				} catch (WriterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				//调用系统联系人
+				//方式一
+//				Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+//				startActivityForResult(intent, PICK_CONTACT);
+				//方式二
+				Intent intent = new Intent(Intent.ACTION_PICK);        
+				intent.setType(ContactsContract.Contacts.CONTENT_TYPE);//vnd.android.cursor.dir/contact
+				startActivityForResult(intent, PICK_CONTACT);
 			}
 		});
     }
@@ -70,12 +70,34 @@ public class QRCardActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		Log.d(TAG, "onActivityResult");
+		
 		//show the scan result in view
-		if (resultCode == RESULT_OK) {
-			Bundle bundle = data.getExtras();
-			String scanResult = bundle.getString("result");
-			resultTextView.setText(scanResult);
-		}
+		if (resultCode == Activity.RESULT_OK) {
+	        switch(requestCode){  
+	        	case(SCAN_CONTACT):
+	        		Log.d(TAG, "onActivityResult SCAN_CONTACT");
+	    			Bundle bundle = data.getExtras();
+	    			String scanResult = bundle.getString("result");
+	    			resultTextView.setText(scanResult);
+	           case (PICK_CONTACT):  
+	               	Log.d(TAG, "onActivityResult PICK_CONTACT");  
+	                Uri contactData = data.getData();  
+	     				try {
+		 					String contentString = ContactManager.getInstance().getJsonByContactData(this, contactData);
+		 					if (!contentString.equals("")) {
+		 						//Generate QR code bitmap with default width and height
+		 						Bitmap qrCodeBitmap = EncodingHandler.createQRCode(contentString, QR_CODE_BITMAP_WIDTH_AND_HIGHT);
+		 						qrImgImageView.setImageBitmap(qrCodeBitmap);
+		 					}else {
+		 						Toast.makeText(QRCardActivity.this, "Text can not be empty", Toast.LENGTH_SHORT).show();
+		 					}					
+	     				} catch (WriterException e) {
+	     					// TODO Auto-generated catch block
+	     					e.printStackTrace();
+	     				} 
+	                }
+	        }
 	}
 
     @Override

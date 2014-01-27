@@ -2,19 +2,16 @@ package com.main.contact;
 
 import java.util.ArrayList;
 
+import com.main.gson.JsonHandler;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.Email;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.CommonDataKinds.SipAddress;
 import android.provider.ContactsContract.CommonDataKinds;
-import android.provider.ContactsContract.Data;
-import android.provider.ContactsContract.RawContacts;
-import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.util.Log;
 
 public class ContactManager {
 	private static ContactManager instance = null; 
@@ -183,7 +180,191 @@ public class ContactManager {
         }
         
         return contactId;
-    } 
+    }
+	
+	public String getJsonByContactData(Context context,Uri contactData) {  
+		String json = "";
+		ContactInfo contact = new ContactInfo();
+		
+        Cursor cursor= context.getContentResolver().query(contactData, null, null, null, null);  
+        if (cursor.moveToFirst()) {  
+        	int idColumn = cursor.getColumnIndex(ContactsContract.Contacts._ID); 
+            int displayNameColumn = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);  
+  
+            do {  
+                // 获得联系人的ID号  
+                String contactId = cursor.getString(idColumn);  
+                // 获得联系人姓名  
+                String disPlayName = cursor.getString(displayNameColumn); 
+        		ContactName name = new ContactName();
+        		name.setType(CommonDataKinds.StructuredName.GIVEN_NAME);
+        		name.setValue(disPlayName);
+        		contact.setName(name);
+                Log.d("username", disPlayName); 
+ 
+                // 查看该联系人有多少个电话号码。 
+                int phoneCount = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));   
+                if (phoneCount > 0) {  
+            		ArrayList<ContactPhone> phoneList = new ArrayList<ContactPhone>();
+                    // 获得联系人的电话号码  
+                    Cursor phones = context.getContentResolver().query(  
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,  
+                            null,  
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID+ " = " + contactId, 
+                            null, 
+                            null);  
+                    if (phones.moveToFirst()) {  
+                        do {  
+                            // 遍历所有的电话号码  
+                            int phoneType = phones.getInt(
+                    				phones.getColumnIndex(
+                    				ContactsContract.CommonDataKinds.Phone.TYPE)); 
+                            String phoneNumber = phones.getString(
+                            				phones.getColumnIndex(
+                            				ContactsContract.CommonDataKinds.Phone.NUMBER)); 
+                    		ContactPhone phone = new ContactPhone();
+                    		phone.setType(phoneType);
+                    		phone.setValue(phoneNumber);
+                    		phoneList.add(phone);
+                    		contact.setPhoneList(phoneList);
+                            Log.i("phoneType", String.valueOf(phoneType));
+                            Log.i("phoneNumber", phoneNumber); 
+                        } while (phones.moveToNext());  
+                    }  
+                }  
+  
+                // 获取该联系人邮箱  
+                Cursor emails = context.getContentResolver().query(  
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,  
+                        null,  
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId,
+                        null, 
+                        null);  
+                if (emails.moveToFirst()) {  
+                	ArrayList<ContactEmail> emailList = new ArrayList<ContactEmail>();
+                    do {  
+                        // 遍历所有的电话号码  
+                        int emailType = emails.getInt(
+                        				emails.getColumnIndex(
+                        				ContactsContract.CommonDataKinds.Email.TYPE));  
+                        String emailValue = emails.getString(
+                        				emails.getColumnIndex(
+                        				ContactsContract.CommonDataKinds.Email.DATA));  
+                		ContactEmail email = new ContactEmail();
+                		email.setType(emailType);
+                		email.setValue(emailValue);
+                		emailList.add(email);
+                		contact.setEmailList(emailList);
+                        Log.i("emailType", String.valueOf(emailType));  
+                        Log.i("emailValue", emailValue); 
+                    } while (emails.moveToNext());  
+                }  
+  
+//                // 获取该联系人IM  
+//                Cursor IMs = context.getContentResolver().query(  
+//                        Data.CONTENT_URI,  
+//                        new String[] { Data._ID, Im.PROTOCOL, Im.DATA },  
+//                        Data.CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "='"  
+//                                + Im.CONTENT_ITEM_TYPE + "'",  
+//                        new String[] { contactId }, null);  
+//                if (IMs.moveToFirst()) {  
+//                    do {  
+//                        String protocol = IMs.getString(IMs  
+//                                .getColumnIndex(Im.PROTOCOL));  
+//                        String date = IMs  
+//                                .getString(IMs.getColumnIndex(Im.DATA));  
+//                        Log.i("protocol", protocol);  
+//                        Log.i("date", date);  
+//                    } while (IMs.moveToNext());  
+//                }  
+//  
+//                // 获取该联系人地址  
+//                Cursor address = getContentResolver()  
+//                        .query(  
+//                                ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_URI,  
+//                                null,  
+//                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID  
+//                                        + " = " + contactId, null, null);  
+//                if (address.moveToFirst()) {  
+//                    do {  
+//                        // 遍历所有的地址  
+//                        String street = address  
+//                                .getString(address  
+//                                        .getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET));  
+//                        String city = address  
+//                                .getString(address  
+//                                        .getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY));  
+//                        String region = address  
+//                                .getString(address  
+//                                        .getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.REGION));  
+//                        String postCode = address  
+//                                .getString(address  
+//                                        .getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE));  
+//                        String formatAddress = address  
+//                                .getString(address  
+//                                        .getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS));  
+//                        Log.i("street", street);  
+//                        Log.i("city", city);  
+//                        Log.i("region", region);  
+//                        Log.i("postCode", postCode);  
+//                        Log.i("formatAddress", formatAddress);  
+//                    } while (address.moveToNext());  
+//                }  
+//  
+//                // 获取该联系人组织  
+//                Cursor organizations = context.getContentResolver().query(  
+//                        Data.CONTENT_URI,  
+//                        new String[] { Data._ID, Organization.COMPANY,  
+//                                Organization.TITLE },  
+//                        Data.CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "='"  
+//                                + Organization.CONTENT_ITEM_TYPE + "'",  
+//                        new String[] { contactId }, null);  
+//                if (organizations.moveToFirst()) {  
+//                    do {  
+//                        String company = organizations.getString(organizations  
+//                                .getColumnIndex(Organization.COMPANY));  
+//                        String title = organizations.getString(organizations  
+//                                .getColumnIndex(Organization.TITLE));  
+//                        Log.i("company", company);  
+//                        Log.i("title", title);  
+//                    } while (organizations.moveToNext());  
+//                }  
+//  
+//                // 获取备注信息  
+//                Cursor notes = context.getContentResolver().query(  
+//                        Data.CONTENT_URI,  
+//                        new String[] { Data._ID, Note.NOTE },  
+//                        Data.CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "='"  
+//                                + Note.CONTENT_ITEM_TYPE + "'",  
+//                        new String[] { contactId }, null);  
+//                if (notes.moveToFirst()) {  
+//                    do {  
+//                        String noteinfo = notes.getString(notes  
+//                                .getColumnIndex(Note.NOTE));  
+//                        Log.i("noteinfo", noteinfo);  
+//                    } while (notes.moveToNext());  
+//                }  
+//  
+//                // 获取nickname信息  
+//                Cursor nicknames = context.getContentResolver().query(  
+//                        Data.CONTENT_URI,  
+//                        new String[] { Data._ID, Nickname.NAME },  
+//                        Data.CONTACT_ID + "=?" + " AND " + Data.MIMETYPE + "='"  
+//                                + Nickname.CONTENT_ITEM_TYPE + "'",  
+//                        new String[] { contactId }, null);  
+//                if (nicknames.moveToFirst()) {  
+//                    do {  
+//                        String nickname_ = nicknames.getString(nicknames  
+//                                .getColumnIndex(Nickname.NAME));  
+//                        Log.i("nickname_", nickname_);  
+//                    } while (nicknames.moveToNext());  
+//                }  
+  
+            } while (cursor.moveToNext());  
+        }
+        json = JsonHandler.getInstance().toJson(contact);    
+        return json;
+    }
 	
 	public ArrayList<String> getPhoneListByRawContactId(Context context,int rawContactId) {  
 		ArrayList<String> phoneList = new ArrayList<String>();
