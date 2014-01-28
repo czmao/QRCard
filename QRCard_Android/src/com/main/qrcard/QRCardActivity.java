@@ -25,11 +25,10 @@ import com.zxing.ecnoding.EncodingHandler;
 
 public class QRCardActivity extends Activity {
 	public final static String TAG = "QRCardActivity";
-	public final static int QR_CODE_BITMAP_WIDTH_AND_HIGHT = 700;
+	public final static int QR_CODE_BITMAP_WIDTH_AND_HIGHT = 500;
 	private static final int SCAN_CONTACT = 0;
 	private static final int PICK_CONTACT = 3; 
-	
-	private TextView resultTextView;
+
 	private ImageView qrImgImageView;
 	
     @Override
@@ -37,9 +36,7 @@ public class QRCardActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_qrcard);
-        
-        resultTextView = (TextView) this.findViewById(R.id.tv_scan_result);
-//        qrStrEditText = (EditText) this.findViewById(R.id.et_qr_string);
+
         qrImgImageView = (ImageView) this.findViewById(R.id.iv_qr_image);
         
         Button scanBarCodeButton = (Button) this.findViewById(R.id.btn_scan_barcode);
@@ -77,17 +74,26 @@ public class QRCardActivity extends Activity {
 		
 		//show the scan result in view
 		if (resultCode == Activity.RESULT_OK) {
+			ContactInfo contact = null;
 	        switch(requestCode){  
-	        	case(SCAN_CONTACT):
+	        	case SCAN_CONTACT:
 	        		Log.d(TAG, "onActivityResult SCAN_CONTACT");
 	    			Bundle bundle = data.getExtras();
 	    			String scanResult = bundle.getString("result");
-	    			resultTextView.setText(scanResult);
-	           case (PICK_CONTACT):  
+	    			contact = JsonHandler.getInstance().getContact(scanResult);
+	    			if(contact!=null&&!contact.getName().getValue().isEmpty()){
+	    				ContactManager.getInstance().addContact(this, contact);
+	    				Toast.makeText(QRCardActivity.this, "Add " + contact.getName().getValue() + " to contact list.", Toast.LENGTH_SHORT).show();
+	    			}else{
+	    				Toast.makeText(QRCardActivity.this, "The QR code is invalid.", Toast.LENGTH_SHORT).show();
+	    			}
+	    			break;
+	            case PICK_CONTACT:  
 	               	Log.d(TAG, "onActivityResult PICK_CONTACT");  
 	                Uri contactData = data.getData();  
+	                if(contactData!=null){
 	     				try {
-	     					ContactInfo contact = ContactManager.getInstance().getContactInfo(this, contactData);	
+	     					contact = ContactManager.getInstance().getContactInfo(this, contactData);	
 		 					if (contact!=null&&!contact.getName().getValue().isEmpty()) {
 		 						String contentString = JsonHandler.getInstance().toJson(contact);
 		 						//Generate QR code bitmap with default width and height
@@ -96,13 +102,15 @@ public class QRCardActivity extends Activity {
 		 						ImageManager.getInstance().saveImage(contact.getName().getValue(), qrCodeBitmap);
 		 					}else {
 		 						Toast.makeText(QRCardActivity.this, "Please choose a contact with a name.", Toast.LENGTH_SHORT).show();
-		 					}					
-	     				} catch (WriterException e) {
+		 					}					 
+		                } catch (WriterException e) {
 	     					// TODO Auto-generated catch block
 	     					e.printStackTrace();
-	     				} 
+	     				}
 	                }
+	                break;            	
 	        }
+		}
 	}
 
     @Override
