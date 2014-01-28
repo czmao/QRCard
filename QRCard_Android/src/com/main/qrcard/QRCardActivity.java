@@ -16,7 +16,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.WriterException;
+import com.main.contact.ContactInfo;
 import com.main.contact.ContactManager;
+import com.main.gson.JsonHandler;
+import com.main.qrImage.ImageManager;
 import com.zxing.CaptureActivity;
 import com.zxing.ecnoding.EncodingHandler;
 
@@ -84,13 +87,15 @@ public class QRCardActivity extends Activity {
 	               	Log.d(TAG, "onActivityResult PICK_CONTACT");  
 	                Uri contactData = data.getData();  
 	     				try {
-		 					String contentString = ContactManager.getInstance().getJsonByContactData(this, contactData);
-		 					if (!contentString.equals("")) {
+	     					ContactInfo contact = ContactManager.getInstance().getContactInfo(this, contactData);	
+		 					if (contact!=null&&!contact.getName().getValue().isEmpty()) {
+		 						String contentString = JsonHandler.getInstance().toJson(contact);
 		 						//Generate QR code bitmap with default width and height
 		 						Bitmap qrCodeBitmap = EncodingHandler.createQRCode(contentString, QR_CODE_BITMAP_WIDTH_AND_HIGHT);
 		 						qrImgImageView.setImageBitmap(qrCodeBitmap);
+		 						ImageManager.getInstance().saveImage(contact.getName().getValue(), qrCodeBitmap);
 		 					}else {
-		 						Toast.makeText(QRCardActivity.this, "Text can not be empty", Toast.LENGTH_SHORT).show();
+		 						Toast.makeText(QRCardActivity.this, "Please choose a contact with a name.", Toast.LENGTH_SHORT).show();
 		 					}					
 	     				} catch (WriterException e) {
 	     					// TODO Auto-generated catch block

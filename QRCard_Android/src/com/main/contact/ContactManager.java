@@ -2,8 +2,6 @@ package com.main.contact;
 
 import java.util.ArrayList;
 
-import com.main.gson.JsonHandler;
-
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -182,8 +180,7 @@ public class ContactManager {
         return contactId;
     }
 	
-	public String getJsonByContactData(Context context,Uri contactData) {  
-		String json = "";
+	public ContactInfo getContactInfo(Context context,Uri contactData) {  
 		ContactInfo contact = new ContactInfo();
 		
         Cursor cursor= context.getContentResolver().query(contactData, null, null, null, null);  
@@ -361,9 +358,8 @@ public class ContactManager {
 //                }  
   
             } while (cursor.moveToNext());  
-        }
-        json = JsonHandler.getInstance().toJson(contact);    
-        return json;
+        }   
+        return contact;
     }
 	
 	public ArrayList<String> getPhoneListByRawContactId(Context context,int rawContactId) {  

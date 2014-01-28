@@ -12,6 +12,7 @@ import com.google.zxing.common.BitMatrix;
 
 public final class EncodingHandler {
 	private static final int BLACK = 0xff000000;
+	private static final int WHITE = 0xffffffff;
 	
 	public static Bitmap createQRCode(String str,int widthAndHeight) throws WriterException {
 		Hashtable<EncodeHintType, String> hints = new Hashtable<EncodeHintType, String>();  
@@ -20,6 +21,12 @@ public final class EncodingHandler {
 		int width = matrix.getWidth();
 		int height = matrix.getHeight();
 		int[] pixels = new int[width * height];
+		
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				pixels[y * width + x] = WHITE;
+			}
+		}
 		
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
