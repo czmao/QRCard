@@ -18,9 +18,11 @@
     <TextView android:id="@+id/scan_result" 
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="center" 
-        android:layout_alignParentBottom="true" 
-        android:layout_below="@id/iv_qr_image"/>
+        android:gravity="left" 
+        android:layout_marginLeft="80dp"
+        android:textSize="20sp"
+        android:layout_below="@id/iv_qr_image"
+		/>
     
     <Button
         android:id="@+id/btn_add_qrcode"

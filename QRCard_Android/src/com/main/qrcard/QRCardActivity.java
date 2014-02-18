@@ -30,6 +30,7 @@ public class QRCardActivity extends Activity {
 	private static final int PICK_CONTACT = 3; 
 
 	private ImageView qrImgImageView;
+	private TextView scanText;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class QRCardActivity extends Activity {
         setContentView(R.layout.activity_qrcard);
 
         qrImgImageView = (ImageView) this.findViewById(R.id.iv_qr_image);
+        scanText = (TextView) this.findViewById(R.id.scan_result);
         
         Button scanBarCodeButton = (Button) this.findViewById(R.id.btn_scan_barcode);
         scanBarCodeButton.setOnClickListener(new OnClickListener() {
@@ -83,6 +85,7 @@ public class QRCardActivity extends Activity {
 	    			contact = JsonHandler.getInstance().getContact(scanResult);
 	    			if(contact!=null&&!contact.getName().getValue().isEmpty()){
 	    				ContactManager.getInstance().addContact(this, contact);
+	    				generateQRCodeImage(contact);
 	    				Toast.makeText(QRCardActivity.this, "Add " + contact.getName().getValue() + " to contact list.", Toast.LENGTH_SHORT).show();
 	    			}else{
 	    				Toast.makeText(QRCardActivity.this, "The QR code is invalid.", Toast.LENGTH_SHORT).show();
@@ -92,27 +95,32 @@ public class QRCardActivity extends Activity {
 	               	Log.d(TAG, "onActivityResult PICK_CONTACT");  
 	                Uri contactData = data.getData();  
 	                if(contactData!=null){
-	     				try {
-	     					contact = ContactManager.getInstance().getContactInfo(this, contactData);	
-		 					if (contact!=null&&!contact.getName().getValue().isEmpty()) {
-		 						String contentString = JsonHandler.getInstance().toJson(contact);
-		 						//Generate QR code bitmap with default width and height
-		 						Bitmap qrCodeBitmap = EncodingHandler.createQRCode(contentString, QR_CODE_BITMAP_WIDTH_AND_HIGHT);
-		 						qrImgImageView.setImageBitmap(qrCodeBitmap);
-		 						ImageManager.getInstance().saveImage(contact.getName().getValue(), qrCodeBitmap);
-		 					}else {
-		 						Toast.makeText(QRCardActivity.this, "Please choose a contact with a name.", Toast.LENGTH_SHORT).show();
-		 					}					 
-		                } catch (WriterException e) {
-	     					// TODO Auto-generated catch block
-	     					e.printStackTrace();
-	     				}
+     					contact = ContactManager.getInstance().getContactInfo(this, contactData);	
+	 					if (contact!=null&&!contact.getName().getValue().isEmpty()) {
+	 						generateQRCodeImage(contact);
+	 					}else {
+	 						Toast.makeText(QRCardActivity.this, "Please choose a contact with a name.", Toast.LENGTH_SHORT).show();
+	 					}
 	                }
 	                break;            	
 	        }
 		}
 	}
 
+	private void generateQRCodeImage(ContactInfo contact)
+	{
+		try {
+			String contentString = JsonHandler.getInstance().toJson(contact);
+			//Generate QR code bitmap with default width and height
+			Bitmap qrCodeBitmap = EncodingHandler.createQRCode(contentString, QR_CODE_BITMAP_WIDTH_AND_HIGHT);
+			qrImgImageView.setImageBitmap(qrCodeBitmap);
+			scanText.setText(contact.toString());
+			ImageManager.getInstance().saveImage(contact.getName().getValue(), qrCodeBitmap);
+         } catch (WriterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		 }
+	}
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
