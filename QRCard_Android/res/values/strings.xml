@@ -5,10 +5,11 @@
     <string name="action_settings">Settings</string>
 
     <!-- QRCode activity view -->
-  	<string name="open_camera">Open camera</string>
+    <string name="qr_code_image">QRCode Image</string>
+  	<string name="open_camera">Scan QRCode</string>
   	<string name="scan_result">Scan result：</string>
   	<string name="input_lable">Input the text</string>
-  	<string name="generate_qrcode">Generate QRcode</string>
+  	<string name="generate_qrcode">Select a contact</string>
   	
   	<!-- Help/Capture activity view -->
   	<string name="msg_default_status">Place a barcode inside the viewfinder rectangle to scan it.</string>
