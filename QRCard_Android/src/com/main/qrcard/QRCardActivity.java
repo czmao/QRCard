@@ -113,9 +113,15 @@ public class QRCardActivity extends Activity {
 			String contentString = JsonHandler.getInstance().toJson(contact);
 			//Generate QR code bitmap with default width and height
 			Bitmap qrCodeBitmap = EncodingHandler.createQRCode(contentString, QR_CODE_BITMAP_WIDTH_AND_HIGHT);
-			qrImgImageView.setImageBitmap(qrCodeBitmap);
-			scanText.setText(contact.toString());
-			ImageManager.getInstance().saveImage(contact.getName().getValue(), qrCodeBitmap);
+			if(qrCodeBitmap==null){
+				qrImgImageView.setImageResource(R.drawable.ic_launcher);
+				scanText.setText("");
+				Toast.makeText(QRCardActivity.this, "Fail to generate QRCode.", Toast.LENGTH_SHORT).show();
+			}else{
+				qrImgImageView.setImageBitmap(qrCodeBitmap);
+				scanText.setText(contact.toString());
+				ImageManager.getInstance().saveImage(contact.getName().getValue(), qrCodeBitmap);
+			}
          } catch (WriterException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.zxing.ecnoding;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 import android.graphics.Bitmap;
 
@@ -15,29 +16,39 @@ public final class EncodingHandler {
 	private static final int WHITE = 0xffffffff;
 	
 	public static Bitmap createQRCode(String str,int widthAndHeight) throws WriterException {
+		Bitmap bitmap = null;
 		Hashtable<EncodeHintType, String> hints = new Hashtable<EncodeHintType, String>();  
         hints.put(EncodeHintType.CHARACTER_SET, "utf-8"); 
-		BitMatrix matrix = new MultiFormatWriter().encode(str, BarcodeFormat.QR_CODE, widthAndHeight, widthAndHeight);
-		int width = matrix.getWidth();
-		int height = matrix.getHeight();
-		int[] pixels = new int[width * height];
-		
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				pixels[y * width + x] = WHITE;
-			}
+        BitMatrix matrix = null;
+        try{
+			matrix = new MultiFormatWriter().encode(str, BarcodeFormat.QR_CODE, widthAndHeight, widthAndHeight, hints);
+        } catch (WriterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				if (matrix.get(x, y)) {
-					pixels[y * width + x] = BLACK;
+        if(matrix!=null){
+			int width = matrix.getWidth();
+			int height = matrix.getHeight();
+			int[] pixels = new int[width * height];
+			
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					pixels[y * width + x] = WHITE;
 				}
 			}
-		}
-		Bitmap bitmap = Bitmap.createBitmap(width, height,
-				Bitmap.Config.ARGB_8888);
-		bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+			
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					if (matrix.get(x, y)) {
+						pixels[y * width + x] = BLACK;
+					}
+				}
+			}
+			bitmap = Bitmap.createBitmap(width, height,
+					Bitmap.Config.ARGB_8888);
+			bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        }
 		return bitmap;
 	}
 }
