@@ -21,14 +21,16 @@ public class ContactManager {
 		return instance;    
 	} 
 	
-	public void addContact(Context context, ContactInfo contact){
+	public String addContact(Context context, ContactInfo contact){
+		String conflictName = "";
 		int rawContactId = existContactWithPhone(context, contact.getPhoneList());
 		if(rawContactId>0){
+			conflictName = getNameByRawContactId(context,rawContactId);
 			updateContact(context,rawContactId,contact);
 		}else{
 			addNewContact(context, contact);
 		}
-
+		return conflictName;
 	}
 	
 	public void updateContact(Context context,int rawContactId, ContactInfo contact){
@@ -361,6 +363,30 @@ public class ContactManager {
         }   
         return contact;
     }
+	
+	public String getNameByRawContactId(Context context,int rawContactId) {  
+		String name = "";
+        String[] projection = { ContactsContract.Data.RAW_CONTACT_ID ,  
+        						ContactsContract.Contacts.DISPLAY_NAME};  
+
+        Cursor cursor = context.getContentResolver().query(  
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,  
+                projection,    // Which columns to return.  
+                ContactsContract.Data.RAW_CONTACT_ID + " = '" + rawContactId + "'", // WHERE clause.  
+                null,          // WHERE clause value substitution  
+                null);   // Sort order.  
+  
+        if( cursor != null ) {  
+        	for( int i = 0; i < cursor.getCount(); i++ )  
+        	{  
+        		cursor.moveToPosition(i);    
+        		int contactIdFieldColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);     
+        		name = cursor.getString(contactIdFieldColumnIndex);  
+        	}  
+        }
+        
+        return name;
+    } 
 	
 	public ArrayList<String> getPhoneListByRawContactId(Context context,int rawContactId) {  
 		ArrayList<String> phoneList = new ArrayList<String>();

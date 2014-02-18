@@ -84,9 +84,13 @@ public class QRCardActivity extends Activity {
 	    			String scanResult = bundle.getString("result");
 	    			contact = JsonHandler.getInstance().getContact(scanResult);
 	    			if(contact!=null&&!contact.getName().getValue().isEmpty()){
-	    				ContactManager.getInstance().addContact(this, contact);
+	    				String conflictName = ContactManager.getInstance().addContact(this, contact);
 	    				generateQRCodeImage(contact);
-	    				Toast.makeText(QRCardActivity.this, "Add " + contact.getName().getValue() + " to contact list.", Toast.LENGTH_SHORT).show();
+	    				if(conflictName.isEmpty()){
+	    					Toast.makeText(QRCardActivity.this, "Add " + contact.getName().getValue() + " to contact list.", Toast.LENGTH_SHORT).show();
+	    				}else{
+	    					Toast.makeText(QRCardActivity.this, "The scan infomation has been updated to the existing contact ["+conflictName+"].", Toast.LENGTH_SHORT).show();
+	    				}
 	    			}else{
 	    				Toast.makeText(QRCardActivity.this, "The QR code is invalid.", Toast.LENGTH_SHORT).show();
 	    			}
